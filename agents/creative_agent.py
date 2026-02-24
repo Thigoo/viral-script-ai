@@ -1,16 +1,15 @@
-from config import client, AI_MODEL
-from prompts import SYSTEM_PROMPT
+from config import client, CREATIVE_AI_MODEL
+from prompts import CREATIVE_SYSTEM_PROMPT
 
 def generate_script(theme: str) -> str:
     if not theme.strip():
         return 'Tema inválido.'
     
-    system_prompt = SYSTEM_PROMPT
-    user_prompt = f'Tema do vídeo: {theme}'
-
+    system_prompt = CREATIVE_SYSTEM_PROMPT
+    user_prompt = f'Content theme: {theme}'
     try:
         response = client.chat.completions.create(
-        model = AI_MODEL,
+        model = CREATIVE_AI_MODEL,
         messages = [
             {'role': 'system', 'content': system_prompt},
             {'role': 'user', 'content': user_prompt}
