@@ -106,3 +106,27 @@ Ensure there are no repeated sentences.
 The final script must be cohesive and free of artifacts.
 Return only the revised script.
 """
+
+REFINEMENT_USER_PROMPT = """
+Content theme: {theme}
+
+Original script:
+{script}
+
+Critic scores:
+Hook: {hook_score}
+Retention: {retention_score}
+Depth: {depth_score}
+Clarity: {clarity_score}
+Theme alignment: {theme_alignment_score}
+
+Feedback:
+{feedback}
+
+IMPORTANT:
+Return only the final improved script.
+Do not include titles.
+Do not include labels.
+Do not include explanations.
+Return plain text only.
+"""
