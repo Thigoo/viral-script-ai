@@ -1,36 +1,64 @@
 from agents.creative_agent import generate_script
 from agents.critic_agent import generate_critic
 from agents.refinement_agent import generate_refinement
+from utils.helper import estimate_duration_from_text
 import json
 
 if __name__ == '__main__':
-    theme = 'Por que o pão de acúcar tem esse nome?'
+    theme = 'Ainda vale a pena dropshipping em 2026?'
 
-    script = generate_script(theme)
-    print('\n=== ROTEIRO GERADO ===\n')
-    print(script)
+    current_script = generate_script(theme)
 
-    critic = generate_critic(theme, script)
-    print('\n=== CRÍTICA GERADA ===\n')
-    print(json.dumps(critic, indent=4, ensure_ascii=False))
+    print('\n=== SCRIPT INICIAL ===\n')
+    print(current_script)
 
-    force_refinement = False
+    IDEAL_MIN_DURATION = 55
+    IDEAL_MAX_DURATION = 65
 
-    if critic['critica']['estimated_duration_seconds'] < 45:
-        force_refinement = True
+    MIN_SCORE = 7
 
-    needs_refinement = critic['critica']['needs_refinement'] or force_refinement
+    MAX_ITERATIONS = 3
+    iteration = 0
 
-    if not needs_refinement:
-        print('\n=== NÃO REQUER REFINAMENTO ===\n')
-        final_script = script
-    else:
+    while iteration < MAX_ITERATIONS:
+
+        real_duration = estimate_duration_from_text(current_script)
+        critic = generate_critic(theme, current_script)
+
+        print(f'\n=== ITERAÇÃO {iteration + 1} ===')
+        print(f'REAL DURATION ->> {real_duration}s')
+        print(json.dumps(critic, indent=4, ensure_ascii=False))
+
+        duration_ok = IDEAL_MIN_DURATION <= real_duration <= IDEAL_MAX_DURATION
+
+        quality_ok = (
+            critic['critica']['hook_score'] >= MIN_SCORE and
+            critic['critica']['retention_score'] >= MIN_SCORE and
+            critic['critica']['depth_score'] >= MIN_SCORE
+        )
+
+        critic_flag = critic['critica']['needs_refinement']
+
+        if duration_ok and quality_ok and not critic_flag:
+            print('\n=== CRITÉRIOS ATINGIDOS ===\n')
+            break
+
+        print('\n=== REFINANDO... ===\n')
+
         refinement_data = {
             'theme': theme,
-            'script': script,
+            'script': current_script,
             'critic': critic['critica'],
         }
-        final_script = generate_refinement(**refinement_data)
+
+        current_script = generate_refinement(**refinement_data)
+
+        iteration += 1
+
+    final_script = current_script
 
     print('\n=== SCRIPT FINAL ===\n')
     print(final_script)
+
+    final_duration = estimate_duration_from_text(final_script)
+    print(f'\nFINAL DURATION ->> {final_duration}s')

@@ -99,5 +99,10 @@ Important rules:
 - Return only the improved script
 - Keep language concise, dynamic, and engaging
 
+Return a fully rewritten, clean version of the script.
+Do not duplicate paragraphs.
+Do not repeat sections.
+Ensure there are no repeated sentences.
+The final script must be cohesive and free of artifacts.
 Return only the revised script.
 """

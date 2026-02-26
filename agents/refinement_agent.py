@@ -16,7 +16,14 @@ Theme alignment: {data['critic']["theme_alignment_score"]}
 
 Feedback:
 {data['critic']["feedback"]}
-    """
+
+IMPORTANT:
+Return only the final improved script.
+Do not include titles.
+Do not include labels.
+Do not include explanations.
+Return plain text only.
+"""
 
     try:
         response = client.chat.completions.create(
