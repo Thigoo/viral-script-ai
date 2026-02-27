@@ -1,6 +1,8 @@
 import streamlit as st
 
 from engine.pipeline import run_pipeline
+from utils.helper import estimate_duration_from_text, generate_srt
+# import time apenas para testes mocados
 
 st.set_page_config(
     page_title="Viral Script AI",
@@ -101,13 +103,15 @@ with tab1:
     tornando a produção de vídeos mais eficiente e profissional.
     """)
 
-# ABA 2 — GERADOR REAL
+def render_script_box(title: str, content: str, key: str):
+    st.markdown(f"### {title}")
+    st.code(content, language=None)
+
+# ABA 2 — GERADOR DE ROTEIROS
 with tab2:
 
     st.markdown("# ⚙️ Gerador de Roteiros")
-
     st.markdown("Digite um tema e gere um roteiro otimizado automaticamente.")
-
     st.divider()
 
     col1, col2 = st.columns(2)
@@ -115,27 +119,45 @@ with tab2:
     with col1:
         theme = st.text_input("🎯 Tema do vídeo")
 
-    # with col2:
-    #     platform = st.selectbox(
-    #         "📱 Plataforma",
-    #         ["YouTube Shorts", "Instagram Reels", "TikTok"]
-    #     )
-
     generate_button = st.button("🚀 Gerar roteiro")
-
     st.divider()
 
+    # SESSION STATE
+    if "result" not in st.session_state:
+        st.session_state.result = None
+
     if generate_button and theme:
-
-        status_container = st.empty()
-
         with st.spinner("Executando pipeline multi-agente..."):
             result = run_pipeline(theme)
 
-        status_container.empty()
+        st.session_state.result = result
 
+    elif generate_button and not theme:
+        st.warning("Digite um tema para gerar o roteiro.")
+
+    result = st.session_state.result
+
+    # EXIBIÇÃO
+    if result:
         st.markdown("## 📜 Roteiro Final")
-        st.markdown(result["final_script"])
+        render_script_box(
+            "✨ Versão Otimizada",
+            result["final_script"],
+            key="final"
+        )
+
+        srt_file = generate_srt(
+            result["final_script"],
+            result["final_duration"],
+            speaker="Speaker"
+        )
+
+        st.download_button(
+            label="⬇️ Baixar legenda (.srt)",
+            data=srt_file,
+            file_name="roteiro_legenda.srt",
+            mime="text/plain"
+        )
 
         st.divider()
 
@@ -159,19 +181,20 @@ with tab2:
 
         st.markdown(f"### ⏱️ Duração estimada: {result['final_duration']}s")
 
-        st.metric("Duração estimada", f'{result["final_duration"]}s')
-
         st.divider()
 
+        # 🔍 PROCESSO
         with st.expander("🔍 Ver processo de melhoria"):
 
             if result["initial_script"]:
-                st.markdown("### 📝 Roteiro Inicial")
-                st.markdown(result["initial_script"])
+                render_script_box(
+                    "📝 Roteiro Inicial",
+                    result["initial_script"],
+                    key="initial"
+                )
                 st.divider()
 
             for iteration in result["iterations"]:
-
                 st.markdown(f"### 🔁 Iteração {iteration['iteration']}")
                 st.markdown(f"Duração estimada: {iteration['duration']}s")
 
@@ -179,7 +202,6 @@ with tab2:
 
                 st.markdown("**Feedback do crítico:**")
                 st.write(critic_data["feedback"])
-
                 st.divider()
 
         st.success("Roteiro pronto para publicação 🚀")
