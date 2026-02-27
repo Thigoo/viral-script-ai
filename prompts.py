@@ -129,4 +129,5 @@ Do not include titles.
 Do not include labels.
 Do not include explanations.
 Return plain text only.
+MUST be written in Brazilian Portuguese.
 """
