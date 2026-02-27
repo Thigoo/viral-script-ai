@@ -92,18 +92,31 @@ Your task:
 - Add meaningful substance if depth score is below 7
 - Avoid unnecessary expansion
 
+CRITICAL FORMATTING RULES (MANDATORY):
+
+- Preserve the short-form rhythm of the original script.
+- Use short paragraphs separated by blank lines.
+- Each paragraph must contain 1–3 short sentences maximum.
+- NEVER output the script as a single continuous paragraph.
+- Maintain strong visual breaks for mobile reading.
+- Keep pacing dynamic and punchy.
+- Avoid long, dense blocks of text.
+- Do not merge all ideas into one paragraph.
+
 Important rules:
 - Do NOT explain what you changed
 - Do NOT output analysis
 - Do NOT mention the critic
 - Return only the improved script
 - Keep language concise, dynamic, and engaging
+- Maintain natural spoken Brazilian Portuguese
 
 Return a fully rewritten, clean version of the script.
 Do not duplicate paragraphs.
 Do not repeat sections.
 Ensure there are no repeated sentences.
 The final script must be cohesive and free of artifacts.
+The final script must preserve dynamic formatting and visual spacing.
 Return only the revised script.
 """
 
