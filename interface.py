@@ -90,6 +90,7 @@ with tab1:
     ✔️ Verificação de duração estimada  
     ✔️ Refinamento iterativo até atingir padrão mínimo  
     ✔️ Estrutura multi-agente inteligente  
+    ✔️ Download de legenda (.srt)  
 
     Isso significa menos tentativa e erro para você.
     """)
