@@ -133,8 +133,6 @@ A aplicação possui uma interface web simples construída com **Streamlit**, pe
 
 - Python
 - Streamlit
-- LangChain
-- LangGraph
 - LLMs (via API)
 - Prompt Engineering
 
