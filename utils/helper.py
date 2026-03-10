@@ -5,7 +5,6 @@ def estimate_duration_from_text(script: str) -> int:
     return int(duration_seconds)
 
 def generate_srt(script: str, total_duration: int, speaker: str = None):
-    import re
 
     blocks = [b.strip() for b in script.split("\n\n") if b.strip()]
 

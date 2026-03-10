@@ -4,10 +4,10 @@ from agents.refinement_agent import RefinementAgent
 from utils.helper import estimate_duration_from_text
 from config import CREATIVE_AI_MODEL, CRITIC_AI_MODEL, REFINEMENT_AI_MODEL, client
 
-IDEAL_MIN_DURATION = 55
-IDEAL_MAX_DURATION = 65
-MIN_SCORE = 7
-MAX_ITERATIONS = 3
+IDEAL_MIN_DURATION = 50
+IDEAL_MAX_DURATION = 60
+# MIN_SCORE = 7
+# MAX_ITERATIONS = 1
 
 
 def run_pipeline(theme: str) -> dict:
@@ -28,54 +28,27 @@ def run_pipeline(theme: str) -> dict:
         temperature=0.5
         )
 
-    current_script = creative.generate_script(theme)
+    initial_script = creative.generate_script(theme)
 
-    initial_script = current_script 
+    initial_duration = estimate_duration_from_text(initial_script)
 
-    iterations_data = []
+    initial_critic = critic_agent.evaluate(theme, initial_script)
 
-    iteration = 0
+    final_script = refiner.refine(
+        theme, 
+        initial_script, 
+        initial_critic,
+        current_duration=initial_duration,
+        target_min_duration=IDEAL_MIN_DURATION,
+        target_max_duration=IDEAL_MAX_DURATION
+    )
 
-    while iteration < MAX_ITERATIONS:
-
-        real_duration = estimate_duration_from_text(current_script)
-
-        critic_result = critic_agent.evaluate(theme, current_script)
-
-        critic_data = critic_result
-
-        duration_ok = IDEAL_MIN_DURATION <= real_duration <= IDEAL_MAX_DURATION
-
-        quality_ok = (
-            critic_data["hook_score"] >= MIN_SCORE and
-            critic_data["retention_score"] >= MIN_SCORE and
-            critic_data["depth_score"] >= MIN_SCORE
-        )
-
-        critic_flag = critic_data["needs_refinement"]
-
-        iterations_data.append({
-            "iteration": iteration + 1,
-            "duration": real_duration,
-            "critic": critic_result
-        })
-
-        if duration_ok and quality_ok and not critic_flag:
-            break
-
-        current_script = refiner.refine(
-            theme=theme,
-            script=current_script,
-            critic=critic_data
-        )
-
-        iteration += 1
-
-    final_duration = estimate_duration_from_text(current_script)
+    final_duration = estimate_duration_from_text(final_script)
 
     return {
         "initial_script": initial_script,
-        "iterations": iterations_data,
-        "final_script": current_script,
-        "final_duration": final_duration
+        "initial_duration": initial_duration,
+        "initial_critic": initial_critic,
+        "final_script": final_script,
+        "final_duration": final_duration,
     }

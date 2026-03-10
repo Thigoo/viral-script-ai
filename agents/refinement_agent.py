@@ -2,7 +2,7 @@ from agents.base_agent import BaseAgent
 from prompts import REFINEMENT_SYSTEM_PROMPT, REFINEMENT_USER_PROMPT
 
 class RefinementAgent(BaseAgent):
-    def refine(self, theme: str, script: str, critic: dict) -> str:
+    def refine(self, theme: str, script: str, critic: dict, current_duration: int, target_min_duration: int, target_max_duration: int) -> str:
         user_prompt = REFINEMENT_USER_PROMPT.format(
             theme=theme,
             script=script,
@@ -11,7 +11,10 @@ class RefinementAgent(BaseAgent):
             depth_score=critic["depth_score"],
             clarity_score=critic["clarity_score"],
             theme_alignment_score=critic["theme_alignment_score"],
-            feedback=critic["feedback"]
+            feedback=critic["feedback"],
+            current_duration=current_duration,
+            target_min_duration=target_min_duration,
+            target_max_duration=target_max_duration
         )
 
         messages = [

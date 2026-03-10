@@ -128,7 +128,7 @@ with tab2:
         st.session_state.result = None
 
     if generate_button and theme:
-        with st.spinner("Executando pipeline multi-agente..."):
+        with st.spinner("Executando pipeline multi-agente, isso pode levar alguns segundos..."):
             result = run_pipeline(theme)
 
         st.session_state.result = result
@@ -144,7 +144,7 @@ with tab2:
         render_script_box(
             "✨ Versão Otimizada",
             result["final_script"],
-            key="final"
+            key="final_script"
         )
 
         srt_file = generate_srt(
@@ -157,33 +157,15 @@ with tab2:
             label="⬇️ Baixar legenda (.srt)",
             data=srt_file,
             file_name="roteiro_legenda.srt",
-            mime="text/plain"
+            mime="text/plain",
+            key="final_srt"
         )
-
-        st.divider()
-
-        st.markdown("## 📊 Métricas de Qualidade")
-
-        if result["iterations"]:
-            last_iteration = result["iterations"][-1]
-            critic = last_iteration["critic"]
-
-            metrics = {
-                "Hook": critic["hook_score"],
-                "Retenção": critic["retention_score"],
-                "Profundidade": critic["depth_score"],
-                "Clareza": critic["clarity_score"],
-                "Alinhamento com Tema": critic["theme_alignment_score"],
-            }
-
-            for name, value in metrics.items():
-                st.markdown(f"**{name} — {value}/10**")
-                st.progress(value / 10)
 
         st.markdown(f"### ⏱️ Duração estimada: {result['final_duration']}s")
 
         st.divider()
 
+        
         # 🔍 PROCESSO
         with st.expander("🔍 Ver processo de melhoria"):
 
@@ -193,16 +175,25 @@ with tab2:
                     result["initial_script"],
                     key="initial"
                 )
-                st.divider()
 
-            for iteration in result["iterations"]:
-                st.markdown(f"### 🔁 Iteração {iteration['iteration']}")
-                st.markdown(f"Duração estimada: {iteration['duration']}s")
+                st.markdown(f"### ⏱️ Duração estimada: {result['initial_duration']}s")
 
-                critic_data = iteration["critic"]
+                srt_file = generate_srt(
+                result["initial_script"],
+                result["initial_duration"],
+                speaker="Speaker"
+                )
 
-                st.markdown("**Feedback do crítico:**")
-                st.write(critic_data["feedback"])
+                st.download_button(
+                    label="⬇️ Baixar legenda (.srt)",
+                    data=srt_file,
+                    file_name="roteiro_legenda.srt",
+                    mime="text/plain",
+                    key="initial_srt"
+                )
+
+                st.markdown(f'Crítica da IA: {result["initial_critic"]}')
+
                 st.divider()
 
         st.success("Roteiro pronto para publicação 🚀")
