@@ -2,13 +2,12 @@ import streamlit as st
 
 from engine.pipeline import run_pipeline
 from utils.helper import estimate_duration_from_text, generate_srt
-# import time apenas para testes mocados
+import time
 
 st.set_page_config(
     page_title="Viral Script AI",
     page_icon="🚀",
     layout="wide",
-
 )
 
 tab1, tab2 = st.tabs(["📘 Sobre o Produto", "⚙️ Gerador de Roteiros"])
@@ -72,7 +71,7 @@ with tab1:
     st.markdown("## 🚀 Como Funciona")
 
     st.markdown("""
-    1. Você informa um tema.  
+    1. Você informa o título do seu próximo conteúdo.  
     2. A IA cria um roteiro inicial.  
     3. O sistema avalia qualidade e duração.  
     4. Se necessário, ele ajusta automaticamente.  
@@ -112,31 +111,43 @@ def render_script_box(title: str, content: str, key: str):
 with tab2:
 
     st.markdown("# ⚙️ Gerador de Roteiros")
-    st.markdown("Digite um tema e gere um roteiro otimizado automaticamente.")
+    st.markdown("Digite o título do seu vídeo e gere um roteiro otimizado automaticamente.")
     st.divider()
 
     col1, col2 = st.columns(2)
 
     with col1:
-        theme = st.text_input("🎯 Tema do vídeo")
+        theme = st.text_input("🎯 Título do vídeo")
 
     generate_button = st.button("🚀 Gerar roteiro")
+
     st.divider()
 
     # SESSION STATE
     if "result" not in st.session_state:
         st.session_state.result = None
 
+    if "execution_time" not in st.session_state:
+        st.session_state.execution_time = None
+
     if generate_button and theme:
         with st.spinner("Executando pipeline multi-agente, isso pode levar alguns segundos..."):
+            start_time = time.time()
             result = run_pipeline(theme)
+            end_time = time.time()
 
+        total_seconds = round(end_time - start_time, 2)
+                
         st.session_state.result = result
+        st.session_state.execution_time = total_seconds
 
     elif generate_button and not theme:
-        st.warning("Digite um tema para gerar o roteiro.")
+        st.warning("Digite algo para gerar o roteiro.")
 
     result = st.session_state.result
+
+    if st.session_state.execution_time:
+        st.write(f"⏳ Roteiro pronto em {st.session_state.execution_time}s")
 
     # EXIBIÇÃO
     if result:
@@ -164,7 +175,6 @@ with tab2:
         st.markdown(f"### ⏱️ Duração estimada: {result['final_duration']}s")
 
         st.divider()
-
         
         # 🔍 PROCESSO
         with st.expander("🔍 Ver processo de melhoria"):
@@ -175,8 +185,6 @@ with tab2:
                     result["initial_script"],
                     key="initial"
                 )
-
-                st.markdown(f"### ⏱️ Duração estimada: {result['initial_duration']}s")
 
                 srt_file = generate_srt(
                 result["initial_script"],
@@ -192,11 +200,15 @@ with tab2:
                     key="initial_srt"
                 )
 
-                st.markdown(f'Crítica da IA: {result["initial_critic"]}')
+                st.markdown(f"### ⏱️ Duração estimada: {result['initial_duration']}s")
 
-                st.divider()
+                st.markdown(f'Crítica da IA: {result["initial_critic"]}') 
 
-        st.success("Roteiro pronto para publicação 🚀")
+        st.divider()
 
-    elif generate_button and not theme:
-        st.warning("Digite um tema para gerar o roteiro.")
+        st.markdown("**Não gostou deste roteiro? Gere novamente.**")
+
+        if st.button("🔄 Gerar novamente"):
+            st.session_state.result = None
+            st.session_state.execution_time = None
+            st.rerun() 

@@ -3,6 +3,7 @@ from agents.critic_agent import CriticAgent
 from agents.refinement_agent import RefinementAgent
 from utils.helper import estimate_duration_from_text
 from config import CREATIVE_AI_MODEL, CRITIC_AI_MODEL, REFINEMENT_AI_MODEL, client
+import streamlit as st
 
 IDEAL_MIN_DURATION = 50
 IDEAL_MAX_DURATION = 60
@@ -27,13 +28,17 @@ def run_pipeline(theme: str) -> dict:
         ai_model=REFINEMENT_AI_MODEL,
         temperature=0.5
         )
-
+    
+    pipeline_steps = st.empty()
+    pipeline_steps.info("✍️ Criando roteiro inicial...")
     initial_script = creative.generate_script(theme)
 
     initial_duration = estimate_duration_from_text(initial_script)
 
+    pipeline_steps.info("🧠 Analisando roteiro com crítico...")
     initial_critic = critic_agent.evaluate(theme, initial_script)
 
+    pipeline_steps.info("🔧 Refinando roteiro...")
     final_script = refiner.refine(
         theme, 
         initial_script, 
@@ -42,6 +47,8 @@ def run_pipeline(theme: str) -> dict:
         target_min_duration=IDEAL_MIN_DURATION,
         target_max_duration=IDEAL_MAX_DURATION
     )
+
+    pipeline_steps.success("✅ Roteiro finalizado!")
 
     final_duration = estimate_duration_from_text(final_script)
 
